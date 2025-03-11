@@ -76,6 +76,5 @@ void jpeg::Encoder::encode(void* data, const EncodeParams& params) {
 
   // Release resources
   free(buf);
-  jpeg_destroy_compress(&m_cinfo);
   file.close();
 }
