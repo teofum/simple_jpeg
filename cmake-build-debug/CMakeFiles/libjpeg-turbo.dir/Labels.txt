@@ -1,0 +1,13 @@
+# Target labels
+ libjpeg-turbo
+# Source files and their labels
+/Users/teo/dev/simple_jpeg/cmake-build-debug/CMakeFiles/libjpeg-turbo
+/Users/teo/dev/simple_jpeg/cmake-build-debug/CMakeFiles/libjpeg-turbo.rule
+/Users/teo/dev/simple_jpeg/cmake-build-debug/CMakeFiles/libjpeg-turbo-complete.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-build.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-configure.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-download.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-install.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-mkdir.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-patch.rule
+/Users/teo/dev/simple_jpeg/turbojpeg/src/libjpeg-turbo-stamp/libjpeg-turbo-update.rule
