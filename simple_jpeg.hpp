@@ -102,9 +102,9 @@ struct EncodeParams {
       case PixelFormat::Uint16:
       case PixelFormat::Float16: return 2;
       case PixelFormat::Uint32:
-      case PixelFormat::Float32: return 3;
+      case PixelFormat::Float32: return 4;
       case PixelFormat::Uint64:
-      case PixelFormat::Float64: return 4;
+      case PixelFormat::Float64: return 8;
     }
   }
 };
