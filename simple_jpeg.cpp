@@ -2,28 +2,45 @@
 
 #define min(x, y) ((x) < (y)) ? (x) : (y)
 
-jpeg::Encoder::Encoder() noexcept {
+namespace jpeg {
+
+// IEEE-754 half-precision float to 32-bit float conversion
+// https://stackoverflow.com/a/60047308
+static uint32_t as_uint(const float x) { return *(uint32_t*) &x; }
+static float as_float(const uint32_t x) { return *(float*) &x; }
+
+static float half_to_float(const uint16_t x) { // IEEE-754 16-bit floating-point format (without infinity): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+  const uint32_t e = (x & 0x7C00) >> 10; // exponent
+  const uint32_t m = (x & 0x03FF) << 13; // mantissa
+  const uint32_t v = as_uint((float) m) >> 23; // evil log2 bit hack to count leading zeros in denormalized format
+  return as_float((x & 0x8000) << 16
+                  | (e != 0) * ((e + 112) << 23 | m)
+                  | ((e == 0) & (m != 0)) *
+                    ((v - 37) << 23 | ((m << (150 - v)) & 0x007FE000))); // sign : normalized : denormalized
+}
+
+Encoder::Encoder() noexcept {
   m_cinfo.err = jpeg_std_error(&m_jerr);
   jpeg_create_compress(&m_cinfo);
 }
 
-jpeg::Encoder::~Encoder() {
+Encoder::~Encoder() {
   jpeg_destroy_compress(&m_cinfo);
 }
 
-jpeg::Encoder::Encoder(jpeg::Encoder&& enc) noexcept {
+Encoder::Encoder(Encoder&& enc) noexcept {
   m_cinfo = enc.m_cinfo;
   m_jerr = enc.m_jerr;
 }
 
-jpeg::Encoder& jpeg::Encoder::operator=(jpeg::Encoder&& enc) noexcept {
+Encoder& Encoder::operator=(Encoder&& enc) noexcept {
   m_cinfo = enc.m_cinfo;
   m_jerr = enc.m_jerr;
 
   return *this;
 }
 
-void jpeg::Encoder::encode(void* data, const EncodeParams& params) {
+void Encoder::encode(void* data, const EncodeParams& params) {
   // Set up a simple buffer
   // TODO use a writer object
   unsigned char* buf = nullptr;
@@ -111,7 +128,10 @@ void jpeg::Encoder::encode(void* data, const EncodeParams& params) {
             break;
           }
           case PixelFormat::Float16: {
-            break; // TODO handle half-precision floating point
+            uint16_t half = ((uint16_t*) data)[offset / 2];
+            float v = half_to_float(half);
+            rowBufferRaw[iWrite] = uint8_t(min(v * 256, 255));
+            break;
           }
           case PixelFormat::Float32: {
             float v = ((float*) data)[offset / 4];
@@ -140,4 +160,6 @@ void jpeg::Encoder::encode(void* data, const EncodeParams& params) {
   // Release resources
   free(buf);
   file.close();
+}
+
 }
