@@ -1,6 +1,6 @@
 #include "simple_jpeg.hpp"
 
-#define max(x, y) ((x) > (y)) ? (x) : (y)
+#define min(x, y) ((x) < (y)) ? (x) : (y)
 
 jpeg::Encoder::Encoder() noexcept {
   m_cinfo.err = jpeg_std_error(&m_jerr);
@@ -99,28 +99,28 @@ void jpeg::Encoder::encode(void* data, const EncodeParams& params) {
           case PixelFormat::Uint16: {
             // For >8bit integer formats, simply dump the lower bits
             // TODO: possibly add dithering support?
-            rowBufferRaw[iWrite] = uint8_t(((uint16_t*) data)[offset] >> 8);
+            rowBufferRaw[iWrite] = uint8_t(((uint16_t*) data)[offset / 2] >> 8);
             break;
           }
           case PixelFormat::Uint32: {
-            rowBufferRaw[iWrite] = uint8_t(((uint32_t*) data)[offset] >> 24);
+            rowBufferRaw[iWrite] = uint8_t(((uint32_t*) data)[offset / 4] >> 24);
             break;
           }
           case PixelFormat::Uint64: {
-            rowBufferRaw[iWrite] = uint8_t(((uint64_t*) data)[offset] >> 56);
+            rowBufferRaw[iWrite] = uint8_t(((uint64_t*) data)[offset / 8] >> 56);
             break;
           }
           case PixelFormat::Float16: {
             break; // TODO handle half-precision floating point
           }
           case PixelFormat::Float32: {
-            float v = ((float*) data)[offset];
-            rowBufferRaw[iWrite] = uint8_t(max(v * 256, 255));
+            float v = ((float*) data)[offset / 4];
+            rowBufferRaw[iWrite] = uint8_t(min(v * 256, 255));
             break;
           }
           case PixelFormat::Float64: {
-            double v = ((double*) data)[offset];
-            rowBufferRaw[iWrite] = uint8_t(max(v * 256, 255));
+            double v = ((double*) data)[offset / 8];
+            rowBufferRaw[iWrite] = uint8_t(min(v * 256, 255));
             break;
           }
         }
