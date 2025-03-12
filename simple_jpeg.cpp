@@ -107,39 +107,41 @@ void Encoder::encode(void* data, const EncodeParams& params) {
 
         size_t offset = scanlineOffset + pixelOffset + channelOffset;
         size_t iWrite = iPixel * m_cinfo.input_components + iChannel;
+
+        uint8_t* dataPtr = ((uint8_t*) data) + offset;
         switch (params.pixelFormat) {
           case PixelFormat::Uint8: {
             // This is the simplest operation: just copy the data per channel
-            rowBufferRaw[iWrite] = ((uint8_t*) data)[offset];
+            rowBufferRaw[iWrite] = *dataPtr;
             break;
           }
           case PixelFormat::Uint16: {
             // For >8bit integer formats, simply dump the lower bits
             // TODO: possibly add dithering support?
-            rowBufferRaw[iWrite] = uint8_t(((uint16_t*) data)[offset / 2] >> 8);
+            rowBufferRaw[iWrite] = uint8_t(*((uint16_t*) dataPtr) >> 8);
             break;
           }
           case PixelFormat::Uint32: {
-            rowBufferRaw[iWrite] = uint8_t(((uint32_t*) data)[offset / 4] >> 24);
+            rowBufferRaw[iWrite] = uint8_t(*((uint32_t*) dataPtr) >> 24);
             break;
           }
           case PixelFormat::Uint64: {
-            rowBufferRaw[iWrite] = uint8_t(((uint64_t*) data)[offset / 8] >> 56);
+            rowBufferRaw[iWrite] = uint8_t(*((uint64_t*) dataPtr) >> 56);
             break;
           }
           case PixelFormat::Float16: {
-            uint16_t half = ((uint16_t*) data)[offset / 2];
+            uint16_t half = *((uint16_t*) dataPtr);
             float v = half_to_float(half);
             rowBufferRaw[iWrite] = uint8_t(min(v * 256, 255));
             break;
           }
           case PixelFormat::Float32: {
-            float v = ((float*) data)[offset / 4];
+            float v = *((float*) dataPtr);
             rowBufferRaw[iWrite] = uint8_t(min(v * 256, 255));
             break;
           }
           case PixelFormat::Float64: {
-            double v = ((double*) data)[offset / 8];
+            double v = *((double*) dataPtr);
             rowBufferRaw[iWrite] = uint8_t(min(v * 256, 255));
             break;
           }
