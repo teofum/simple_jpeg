@@ -1,5 +1,7 @@
 #include "simple_jpeg.hpp"
 
+#define max(x, y) ((x) > (y)) ? (x) : (y)
+
 jpeg::Encoder::Encoder() noexcept {
   m_cinfo.err = jpeg_std_error(&m_jerr);
   jpeg_create_compress(&m_cinfo);
@@ -54,17 +56,78 @@ void jpeg::Encoder::encode(void* data, const EncodeParams& params) {
   jpeg_set_defaults(&m_cinfo);
 
   /*
+   * Calculate parameters
+   */
+  uint32_t nChannels = params.inChannels == -1
+                       ? m_cinfo.input_components
+                       : params.inChannels;
+  uint32_t channelStride = params.channelStride();
+  uint32_t pixelStride = params.inPixelStride == -1
+                         ? channelStride * nChannels
+                         : params.inPixelStride;
+  uint32_t rowStride = params.inRowStride == -1
+                       ? pixelStride * params.width
+                       : params.inRowStride;
+
+  /*
    * Write JPEG data
    */
   jpeg_start_compress(&m_cinfo, true);
 
-  JSAMPROW rowPtr[1];
-  constexpr size_t stride = 3 * sizeof(uint8_t);
-  while (m_cinfo.next_scanline < m_cinfo.image_height) {
-    size_t offset = stride * params.width * m_cinfo.next_scanline;
-    rowPtr[0] = reinterpret_cast<uint8_t*>(data) + offset;
+  std::vector<uint8_t> rowBuffer(sizeof(uint8_t) * m_cinfo.input_components * params.width);
+  uint8_t* rowBufferRaw = rowBuffer.data();
 
-    jpeg_write_scanlines(&m_cinfo, rowPtr, 1);
+  while (m_cinfo.next_scanline < m_cinfo.image_height) {
+    /*
+     * Copy a scanline's worth of data from the input buffer to the internal row
+     * buffer, adapting to the expected 8bpc integer format
+     */
+    size_t scanlineOffset = rowStride * (m_cinfo.next_scanline + params.inRowOffset);
+    for (size_t iPixel = 0; iPixel < params.width; iPixel++) {
+      size_t pixelOffset = pixelStride * (iPixel + params.inPixelOffset);
+      for (size_t iChannel = 0; iChannel < m_cinfo.input_components; iChannel++) {
+        size_t channelOffset = channelStride * (iChannel + params.inChannelOffset);
+
+        size_t offset = scanlineOffset + pixelOffset + channelOffset;
+        size_t iWrite = iPixel * m_cinfo.input_components + iChannel;
+        switch (params.pixelFormat) {
+          case PixelFormat::Uint8: {
+            // This is the simplest operation: just copy the data per channel
+            rowBufferRaw[iWrite] = ((uint8_t*) data)[offset];
+            break;
+          }
+          case PixelFormat::Uint16: {
+            // For >8bit integer formats, simply dump the lower bits
+            // TODO: possibly add dithering support?
+            rowBufferRaw[iWrite] = uint8_t(((uint16_t*) data)[offset] >> 8);
+            break;
+          }
+          case PixelFormat::Uint32: {
+            rowBufferRaw[iWrite] = uint8_t(((uint32_t*) data)[offset] >> 24);
+            break;
+          }
+          case PixelFormat::Uint64: {
+            rowBufferRaw[iWrite] = uint8_t(((uint64_t*) data)[offset] >> 56);
+            break;
+          }
+          case PixelFormat::Float16: {
+            break; // TODO handle half-precision floating point
+          }
+          case PixelFormat::Float32: {
+            float v = ((float*) data)[offset];
+            rowBufferRaw[iWrite] = uint8_t(max(v * 256, 255));
+            break;
+          }
+          case PixelFormat::Float64: {
+            double v = ((double*) data)[offset];
+            rowBufferRaw[iWrite] = uint8_t(max(v * 256, 255));
+            break;
+          }
+        }
+      }
+    }
+
+    jpeg_write_scanlines(&m_cinfo, &rowBufferRaw, 1);
   }
 
   jpeg_finish_compress(&m_cinfo);

@@ -1,5 +1,0 @@
-# ninja log v6
-2	309	1741721285069879979	example/CMakeFiles/simple_jpeg_example.dir/main.cpp.o	97bd57fc558315d5
-4	410	1741721275833694960	CMakeFiles/simple_jpeg.dir/simple_jpeg.cpp.o	8c148a2a62d8d212
-410	426	1741721276239298771	libsimple_jpeg.a	2b3d5973a74050b8
-309	335	1741721285376720037	example/simple_jpeg_example	1f96e635951673a3

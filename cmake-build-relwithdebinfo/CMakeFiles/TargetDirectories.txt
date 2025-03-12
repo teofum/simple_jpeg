@@ -1,3 +1,0 @@
-/Users/teo/dev/simple_jpeg/cmake-build-relwithdebinfo/CMakeFiles/simple_jpeg.dir
-/Users/teo/dev/simple_jpeg/cmake-build-relwithdebinfo/CMakeFiles/edit_cache.dir
-/Users/teo/dev/simple_jpeg/cmake-build-relwithdebinfo/CMakeFiles/rebuild_cache.dir

@@ -1,6 +1,0 @@
-/Users/teo/dev/simple_jpeg/cmake-build-debug/CMakeFiles/simple_jpeg.dir
-/Users/teo/dev/simple_jpeg/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/teo/dev/simple_jpeg/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/teo/dev/simple_jpeg/cmake-build-debug/example/CMakeFiles/simple_jpeg_example.dir
-/Users/teo/dev/simple_jpeg/cmake-build-debug/example/CMakeFiles/edit_cache.dir
-/Users/teo/dev/simple_jpeg/cmake-build-debug/example/CMakeFiles/rebuild_cache.dir
