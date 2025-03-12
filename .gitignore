@@ -1,0 +1,4 @@
+cmake-build-*/
+profile.json
+.DS_Store
+build
