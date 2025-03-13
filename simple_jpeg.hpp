@@ -16,6 +16,11 @@ enum class ColorMode {
   Grayscale,
 };
 
+enum class ColorSpace {
+  sRGB,
+  DisplayP3,
+};
+
 /*
  * Per-channel pixel format of the input buffer
  * Bit depth for writing is always 8bpc. Integer values will be truncated to 8 bits,
@@ -46,6 +51,13 @@ struct EncodeParams {
    * transparency: for RGBA buffers, use RGB mode and inChannels = 4.
    */
   ColorMode colorMode = ColorMode::RGB;
+
+  /*
+   * Input colorspace
+   * Determines the ICC profile that will be embedded in the output JPEG. For
+   * correct color rendering, this should match the input data.
+   */
+  ColorSpace colorSpace = ColorSpace::sRGB;
 
   /*
    * Pixel format of the input data

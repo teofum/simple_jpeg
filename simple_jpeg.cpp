@@ -4,6 +4,13 @@
 
 namespace jpeg {
 
+namespace icc_data {
+
+#include <resource/icc/srgb.h>
+#include <resource/icc/display_p3.h>
+
+}
+
 // IEEE-754 half-precision float to 32-bit float conversion
 // https://stackoverflow.com/a/60047308
 template<typename T, typename U>
@@ -87,10 +94,33 @@ void Encoder::encode(void* data, const EncodeParams& params) {
                        : params.inRowStride;
 
   /*
-   * Write JPEG data
+   * Initialize compression op
    */
   jpeg_start_compress(&m_cinfo, true);
 
+  /*
+   * Embed ICC profile data
+   */
+  switch (params.colorSpace) {
+    case ColorSpace::sRGB: {
+      jpeg_write_icc_profile(
+        &m_cinfo,
+        reinterpret_cast<const JOCTET*>(&icc_data::sRGB2014_icc),
+        icc_data::sRGB2014_icc_len
+      );
+    }
+    case ColorSpace::DisplayP3: {
+      jpeg_write_icc_profile(
+        &m_cinfo,
+        reinterpret_cast<const JOCTET*>(&icc_data::Display_P3_icc),
+        icc_data::Display_P3_icc_len
+      );
+    }
+  }
+
+  /*
+   * Write JPEG data
+   */
   std::vector<uint8_t> rowBuffer(sizeof(uint8_t) * m_cinfo.input_components * params.width);
   uint8_t* rowBufferRaw = rowBuffer.data();
 

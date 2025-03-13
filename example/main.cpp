@@ -34,6 +34,16 @@ int main() {
     }
   );
 
+  // Interpret the same data as Display P3
+  enc.encode(
+    data.data(), {
+      .width = size,
+      .height = size,
+      .colorSpace = jpeg::ColorSpace::DisplayP3,
+      .outPath = fs::current_path() / "out_p3.jpeg",
+    }
+  );
+
   // Integer pixel format
   std::vector<uint16_t> data16(size * size * 3);
   for (uint32_t i = 0; i < size; i++) {
